@@ -70,15 +70,27 @@ export async function updateRoomState(
   isOccupied: boolean
 ): Promise<void> {
   try {
+    console.log("Attempting update with:", {
+      url: process.env.NEXT_PUBLIC_SUPABASE_URL,
+      hasKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
+      roomName,
+      isOccupied,
+    });
+
     const { error } = await supabase.from("room_states").upsert({
       room_name: roomName,
       is_occupied: isOccupied,
       updated_at: new Date().toISOString(),
     });
 
-    if (error) throw error;
+    if (error) {
+      console.error("Supabase error:", error);
+      throw error;
+    }
+
+    console.log("Update successful");
   } catch (error) {
-    console.error("Error updating room state:", error);
+    console.error("Detailed error:", error);
     throw new Error("Failed to update room state");
   }
 }
