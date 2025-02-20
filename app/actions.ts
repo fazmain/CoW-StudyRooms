@@ -1,38 +1,64 @@
 "use server";
 
-import { kv } from "@vercel/kv";
 import { promises as fs } from "fs";
 import path from "path";
+import { createClient } from "@supabase/supabase-js";
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
 
 const dataFilePath = path.join(process.cwd(), "data/rooms.json");
 
 // Migration function to run once
-async function migrateDataToKV() {
+async function migrateDataToSupabase() {
   try {
-    // Check if data is already migrated
-    const isMigrated = await kv.get("dataMigrated");
-    if (isMigrated) return;
+    // Check if table exists
+    const { data: existingData } = await supabase
+      .from("room_states")
+      .select("*")
+      .limit(1);
 
-    // Read data from JSON file
-    const fileContent = await fs.readFile(dataFilePath, "utf-8");
-    const roomStates = JSON.parse(fileContent);
+    if (!existingData || existingData.length === 0) {
+      // Read data from JSON file
+      const fileContent = await fs.readFile(dataFilePath, "utf-8");
+      const roomStates = JSON.parse(fileContent);
 
-    // Store data in KV
-    await kv.set("roomStates", roomStates);
-    await kv.set("dataMigrated", true);
+      // Convert to array format for Supabase
+      const roomData = Object.entries(roomStates).map(
+        ([room_name, is_occupied]) => ({
+          room_name,
+          is_occupied,
+        })
+      );
 
-    console.log("Data successfully migrated to KV");
+      // Insert data into Supabase
+      const { error } = await supabase.from("room_states").insert(roomData);
+
+      if (error) throw error;
+      console.log("Data successfully migrated to Supabase");
+    }
   } catch (error) {
     console.error("Migration error:", error);
   }
 }
 
 export async function getRoomStates(): Promise<Record<string, boolean>> {
-  await migrateDataToKV();
+  await migrateDataToSupabase();
 
   try {
-    const states = (await kv.get("roomStates")) as Record<string, boolean>;
-    return states || {};
+    const { data, error } = await supabase
+      .from("room_states")
+      .select("room_name, is_occupied");
+
+    if (error) throw error;
+
+    // Convert array to object format
+    return data.reduce((acc, { room_name, is_occupied }) => {
+      acc[room_name] = is_occupied;
+      return acc;
+    }, {} as Record<string, boolean>);
   } catch (error) {
     console.error("Error fetching room states:", error);
     return {};
@@ -44,9 +70,13 @@ export async function updateRoomState(
   isOccupied: boolean
 ): Promise<void> {
   try {
-    const currentStates = await getRoomStates();
-    const newStates = { ...currentStates, [roomName]: isOccupied };
-    await kv.set("roomStates", newStates);
+    const { error } = await supabase.from("room_states").upsert({
+      room_name: roomName,
+      is_occupied: isOccupied,
+      updated_at: new Date().toISOString(),
+    });
+
+    if (error) throw error;
   } catch (error) {
     console.error("Error updating room state:", error);
     throw new Error("Failed to update room state");

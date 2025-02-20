@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { updateRoomStatus } from "@/app/actions";
+import { updateRoomState } from "@/app/actions";
 import { useToast } from "@/components/ui/use-toast";
 
 interface RoomStatusProps {
@@ -27,19 +27,15 @@ export default function RoomStatus({
     setIsUpdating(true);
     const newStatus = !isOccupied;
     try {
-      const result = await updateRoomStatus(roomName, newStatus);
-      if (result.success) {
-        setIsOccupied(newStatus);
-        onStatusChange(newStatus);
-        toast({
-          title: "Status Updated",
-          description: `${roomName} is now ${
-            newStatus ? "Occupied" : "Available"
-          }`,
-        });
-      } else {
-        throw new Error(result.error || "Failed to update status");
-      }
+      await updateRoomState(roomName, newStatus);
+      setIsOccupied(newStatus);
+      onStatusChange(newStatus);
+      toast({
+        title: "Status Updated",
+        description: `${roomName} is now ${
+          newStatus ? "Occupied" : "Available"
+        }`,
+      });
     } catch (error) {
       console.error("Failed to update status:", error);
       toast({
@@ -57,9 +53,7 @@ export default function RoomStatus({
       onClick={toggleStatus}
       disabled={isUpdating}
       className={`w-full p-4 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-105 bg-stone-100/50 hover:bg-stone-200/50 font-semibold flex justify-between items-center ${
-        isOccupied
-          ? "text-rose-700"
-          : "text-lime-700"
+        isOccupied ? "text-rose-700" : "text-lime-700"
       }`}
     >
       <span>{roomName}</span>
