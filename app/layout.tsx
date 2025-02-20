@@ -12,9 +12,16 @@ const inter = Inter({ subsets: ["latin"] });
 
 // Define metadata for SEO and page information
 export const metadata: Metadata = {
-  title: "College of Wooster Study Rooms",
-  description: "Track the occupancy of study rooms at the College of Wooster",
-  generator: "v0.dev",
+  title: "CoW Study Room Finder",
+  description: "Find available study rooms at The College of Wooster",
+  icons: {
+    icon: [
+      { url: "/favicon.ico" },
+      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+    ],
+    apple: [{ url: "/apple-touch-icon.png" }],
+  },
 };
 
 // Root layout component that wraps all pages
@@ -26,6 +33,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        <link rel="icon" href="/favicon.ico" sizes="any" />
+        <link rel="icon" href="/favicon-16x16.png" sizes="16x16" type="image/png" />
+        <link rel="icon" href="/favicon-32x32.png" sizes="32x32" type="image/png" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         {/* Include Leaflet CSS for map functionality */}
         <link
           rel="stylesheet"

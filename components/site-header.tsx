@@ -14,7 +14,7 @@ export default function SiteHeader({ className }: SiteHeaderProps) {
           </h1>
           <p className="text-sm text-gray-800">
             Select a building marker to check room availability. Help others by
-            marking rooms as occupied or vacant.
+            marking rooms as occupied when you're using them.
           </p>
         </div>
       </div>

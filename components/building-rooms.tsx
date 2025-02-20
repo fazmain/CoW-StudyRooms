@@ -186,7 +186,7 @@ export default function BuildingRooms({
   };
 
   return (
-    <div className="fixed inset-y-0 right-0 w-full sm:w-80 bg-gray-300/20 backdrop-blur-md shadow-lg p-4 overflow-y-auto z-[1000] transition-transform transform translate-x-0 duration-300 ease-in-out">
+    <div className="fixed inset-y-0 right-0 w-full sm:w-96 bg-gray-300/20 backdrop-blur-md shadow-lg p-4 overflow-y-auto z-[1000] transition-transform transform translate-x-0 duration-300 ease-in-out">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-3xl font-bold text-black mt-8 py-5">
           {buildingName}
